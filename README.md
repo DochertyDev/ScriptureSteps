@@ -6,7 +6,7 @@
 
 <div align="center">
 
-_Click the logo above to access the website!_
+_Click the logo above to access the website_
 </div>
 
 <h1 align="center">
