@@ -22,7 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.github/instructions/
 .context/
 GEMINI.md
 # Snyk Security Extension - AI Rules (auto-generated)
