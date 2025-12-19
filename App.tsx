@@ -4,7 +4,6 @@ import { BIBLE_BOOKS, TOTAL_BIBLE_WORD_COUNT } from './constants';
 import { Testament, UserProgress } from './types';
 import { ProgressBar } from './components/ProgressBar';
 import { BookCard } from './components/BookCard';
-import { getDailyReflection } from './services/geminiService';
 
 const LOCAL_STORAGE_KEY = 'scripture_steps_progress';
 
@@ -12,8 +11,6 @@ const App: React.FC = () => {
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTestament, setFilterTestament] = useState<'ALL' | Testament>('ALL');
-  const [reflection, setReflection] = useState<string | null>(null);
-  const [isLoadingReflection, setIsLoadingReflection] = useState(false);
 
   // Load progress on mount
   useEffect(() => {
@@ -63,15 +60,6 @@ const App: React.FC = () => {
       return matchesSearch && matchesFilter;
     });
   }, [searchTerm, filterTestament]);
-
-  const handleGetReflection = async () => {
-    setIsLoadingReflection(true);
-    const lastBookId = completedIds[completedIds.length - 1];
-    const lastBookName = BIBLE_BOOKS.find(b => b.id === lastBookId)?.name;
-    const text = await getDailyReflection(completedIds.length, BIBLE_BOOKS.length, lastBookName);
-    setReflection(text);
-    setIsLoadingReflection(false);
-  };
 
   return (
     <div className="min-h-screen pb-20">
@@ -130,12 +118,6 @@ const App: React.FC = () => {
               <div className="text-sm font-medium text-stone-500">
                 <span className="text-stone-900 font-bold">{completedIds.length}</span> / 66 books completed
               </div>
-              <button 
-                onClick={handleGetReflection}
-                className="text-xs px-3 py-1 bg-amber-100 text-amber-800 rounded-full font-bold hover:bg-amber-200 transition-colors"
-              >
-                {isLoadingReflection ? 'Generating...' : 'Get Reflection'}
-              </button>
             </div>
             <button 
               onClick={clearAll}
@@ -148,25 +130,6 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Gemini Reflection Box */}
-        {reflection && (
-          <div className="mb-8 p-6 bg-stone-900 text-stone-100 rounded-2xl shadow-xl relative overflow-hidden group animate-in fade-in slide-in-from-top duration-500">
-             <div className="absolute top-0 right-0 p-4 opacity-10">
-               <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-               </svg>
-             </div>
-             <button 
-              onClick={() => setReflection(null)}
-              className="absolute top-2 right-2 text-stone-500 hover:text-white"
-             >
-               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-             </button>
-             <h4 className="text-amber-400 font-bold uppercase tracking-widest text-xs mb-2">Spiritual Reflection</h4>
-             <p className="italic leading-relaxed serif text-lg">{reflection}</p>
-          </div>
-        )}
 
         {/* Book Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
