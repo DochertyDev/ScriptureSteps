@@ -1,0 +1,5 @@
+{
+  "name": "ScriptureSteps: Bible Progress Tracker",
+  "description": "A high-precision Bible reading tracker that weights each of the 66 books by word count for an accurate percentage calculation. Features search, testament filtering, and AI-powered reflections.",
+  "requestFramePermissions": []
+}
