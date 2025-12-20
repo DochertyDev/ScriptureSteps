@@ -5,18 +5,22 @@ import { BibleBook } from '../types';
 interface BookCardProps {
   book: BibleBook;
   completedChapters: number[];
+  favoritedChapters: number[];
   isFullyCompleted: boolean;
   isPartiallyCompleted: boolean;
   onChapterToggle: (chapterNumber: number) => void;
+  onFavoritesToggle: (chapterNumber: number) => void;
   onToggleAll: () => void;
 }
 
 export const BookCard: React.FC<BookCardProps> = ({ 
   book, 
   completedChapters, 
+  favoritedChapters,
   isFullyCompleted, 
   isPartiallyCompleted,
-  onChapterToggle, 
+  onChapterToggle,
+  onFavoritesToggle,
   onToggleAll 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -99,21 +103,41 @@ export const BookCard: React.FC<BookCardProps> = ({
           </div>
 
           {/* Chapter Grid */}
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {Array.from({ length: book.chapters }, (_, i) => i + 1).map(chapterNum => (
-              <button
-                key={chapterNum}
-                onClick={() => onChapterToggle(chapterNum)}
-                className={`
-                  h-8 rounded-lg text-xs font-semibold transition-all
-                  ${completedChapters.includes(chapterNum)
-                    ? 'bg-amber-500 text-white shadow-sm'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                  }
-                `}
-              >
-                {chapterNum}
-              </button>
+              <div key={chapterNum} className="relative group">
+                <button
+                  onClick={() => onChapterToggle(chapterNum)}
+                  className={`
+                    w-full h-8 rounded-lg text-xs font-semibold transition-all
+                    ${completedChapters.includes(chapterNum)
+                      ? 'bg-amber-500 text-white shadow-sm'
+                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    }
+                  `}
+                >
+                  {chapterNum}
+                </button>
+                {/* Star Icon - Positioned absolutely */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFavoritesToggle(chapterNum);
+                  }}
+                  className={`
+                    absolute -top-2 -right-2 rounded-full p-1 transition-all
+                    ${favoritedChapters.includes(chapterNum)
+                      ? 'bg-yellow-400 text-yellow-700 shadow-md'
+                      : 'bg-stone-200 text-stone-400 opacity-0 group-hover:opacity-100 hover:bg-stone-300'
+                    }
+                  `}
+                  title={favoritedChapters.includes(chapterNum) ? 'Unfavorite' : 'Favorite'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+              </div>
             ))}
           </div>
 

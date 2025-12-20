@@ -9,6 +9,7 @@ const LOCAL_STORAGE_KEY = 'scripture_steps_progress';
 
 const App: React.FC = () => {
   const [completedChapters, setCompletedChapters] = useState<Record<string, number[]>>({});
+  const [favoritedChapters, setFavoritedChapters] = useState<Record<string, number[]>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTestament, setFilterTestament] = useState<'ALL' | Testament>('ALL');
 
@@ -31,6 +32,29 @@ const App: React.FC = () => {
   const isBookPartiallyCompleted = (bookId: string): boolean => {
     const completed = getCompletedChaptersForBook(bookId);
     return completed.length > 0 && !isBookFullyCompleted(bookId);
+  };
+
+  // Utility functions for favorites
+  const isFavoriteChapter = (bookId: string, chapterNumber: number): boolean => {
+    return favoritedChapters[bookId]?.includes(chapterNumber) ?? false;
+  };
+
+  const getFavoritedChaptersForBook = (bookId: string): number[] => {
+    return favoritedChapters[bookId] ?? [];
+  };
+
+  const toggleFavoriteChapter = (bookId: string, chapterNumber: number) => {
+    setFavoritedChapters(prev => {
+      const bookChapters = prev[bookId] ?? [];
+      const isFavorite = bookChapters.includes(chapterNumber);
+      
+      return {
+        ...prev,
+        [bookId]: isFavorite
+          ? bookChapters.filter(ch => ch !== chapterNumber)
+          : [...bookChapters, chapterNumber].sort((a, b) => a - b)
+      };
+    });
   };
 
   const toggleChapter = (bookId: string, chapterNumber: number) => {
@@ -71,7 +95,7 @@ const App: React.FC = () => {
   };
 
   // Migration function from old format to new format
-  const migrateProgress = (saved: string): Record<string, number[]> => {
+  const migrateProgress = (saved: string): { chapters: Record<string, number[]>, favorites: Record<string, number[]> } => {
     try {
       const parsed = JSON.parse(saved);
       
@@ -88,24 +112,27 @@ const App: React.FC = () => {
           }
         });
         
-        return newProgress;
+        return { chapters: newProgress, favorites: {} };
       } else if ('completedChapters' in parsed && typeof parsed.completedChapters === 'object') {
-        // Already in new format
-        return parsed.completedChapters;
+        // New format with chapters
+        const chapters = parsed.completedChapters || {};
+        const favorites = parsed.favoritedChapters || {};
+        return { chapters, favorites };
       }
     } catch (e) {
       console.error("Failed to parse progress", e);
     }
     
-    return {};
+    return { chapters: {}, favorites: {} };
   };
 
   // Load progress on mount
   useEffect(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
-      const migratedProgress = migrateProgress(saved);
-      setCompletedChapters(migratedProgress);
+      const { chapters, favorites } = migrateProgress(saved);
+      setCompletedChapters(chapters);
+      setFavoritedChapters(favorites);
     }
   }, []);
 
@@ -113,14 +140,16 @@ const App: React.FC = () => {
   useEffect(() => {
     const progress: UserProgress = {
       completedChapters: completedChapters,
+      favoritedChapters: favoritedChapters,
       lastUpdated: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progress));
-  }, [completedChapters]);
+  }, [completedChapters, favoritedChapters]);
 
   const clearAll = () => {
     if (confirm("Are you sure you want to clear all progress? This cannot be undone.")) {
       setCompletedChapters({});
+      setFavoritedChapters({});
     }
   };
 
@@ -231,9 +260,11 @@ const App: React.FC = () => {
                 key={book.id} 
                 book={book} 
                 completedChapters={getCompletedChaptersForBook(book.id)}
+                favoritedChapters={getFavoritedChaptersForBook(book.id)}
                 isFullyCompleted={isBookFullyCompleted(book.id)}
                 isPartiallyCompleted={isBookPartiallyCompleted(book.id)}
                 onChapterToggle={(chapterNum) => toggleChapter(book.id, chapterNum)}
+                onFavoritesToggle={(chapterNum) => toggleFavoriteChapter(book.id, chapterNum)}
                 onToggleAll={() => toggleAllChaptersInBook(book.id)}
               />
             ))
