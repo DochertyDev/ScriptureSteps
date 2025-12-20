@@ -15,6 +15,7 @@ export interface BibleBook {
 export interface UserProgress {
   completedChapters: Record<string, number[]>;
   favoritedChapters: Record<string, number[]>;
+  completedDates: Record<string, string>; // ISO date strings
   lastUpdated: string;
 }
 

@@ -10,6 +10,7 @@ const LOCAL_STORAGE_KEY = 'scripture_steps_progress';
 const App: React.FC = () => {
   const [completedChapters, setCompletedChapters] = useState<Record<string, number[]>>({});
   const [favoritedChapters, setFavoritedChapters] = useState<Record<string, number[]>>({});
+  const [completedDates, setCompletedDates] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTestament, setFilterTestament] = useState<'ALL' | Testament>('ALL');
 
@@ -57,6 +58,25 @@ const App: React.FC = () => {
     });
   };
 
+  // Utility functions for dates
+  const getCompletionDate = (bookId: string): string => {
+    return completedDates[bookId] ?? '';
+  };
+
+  const setCompletionDate = (bookId: string, dateString: string) => {
+    setCompletedDates(prev => {
+      if (!dateString) {
+        const newState = { ...prev };
+        delete newState[bookId];
+        return newState;
+      }
+      return {
+        ...prev,
+        [bookId]: dateString
+      };
+    });
+  };
+
   const toggleChapter = (bookId: string, chapterNumber: number) => {
     setCompletedChapters(prev => {
       const bookChapters = prev[bookId] ?? [];
@@ -95,7 +115,7 @@ const App: React.FC = () => {
   };
 
   // Migration function from old format to new format
-  const migrateProgress = (saved: string): { chapters: Record<string, number[]>, favorites: Record<string, number[]> } => {
+  const migrateProgress = (saved: string): { chapters: Record<string, number[]>, favorites: Record<string, number[]>, dates: Record<string, string> } => {
     try {
       const parsed = JSON.parse(saved);
       
@@ -112,27 +132,29 @@ const App: React.FC = () => {
           }
         });
         
-        return { chapters: newProgress, favorites: {} };
+        return { chapters: newProgress, favorites: {}, dates: {} };
       } else if ('completedChapters' in parsed && typeof parsed.completedChapters === 'object') {
         // New format with chapters
         const chapters = parsed.completedChapters || {};
         const favorites = parsed.favoritedChapters || {};
-        return { chapters, favorites };
+        const dates = parsed.completedDates || {};
+        return { chapters, favorites, dates };
       }
     } catch (e) {
       console.error("Failed to parse progress", e);
     }
     
-    return { chapters: {}, favorites: {} };
+    return { chapters: {}, favorites: {}, dates: {} };
   };
 
   // Load progress on mount
   useEffect(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
-      const { chapters, favorites } = migrateProgress(saved);
+      const { chapters, favorites, dates } = migrateProgress(saved);
       setCompletedChapters(chapters);
       setFavoritedChapters(favorites);
+      setCompletedDates(dates);
     }
   }, []);
 
@@ -141,15 +163,17 @@ const App: React.FC = () => {
     const progress: UserProgress = {
       completedChapters: completedChapters,
       favoritedChapters: favoritedChapters,
+      completedDates: completedDates,
       lastUpdated: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progress));
-  }, [completedChapters, favoritedChapters]);
+  }, [completedChapters, favoritedChapters, completedDates]);
 
   const clearAll = () => {
     if (confirm("Are you sure you want to clear all progress? This cannot be undone.")) {
       setCompletedChapters({});
       setFavoritedChapters({});
+      setCompletedDates({});
     }
   };
 
@@ -261,10 +285,12 @@ const App: React.FC = () => {
                 book={book} 
                 completedChapters={getCompletedChaptersForBook(book.id)}
                 favoritedChapters={getFavoritedChaptersForBook(book.id)}
+                completedDate={getCompletionDate(book.id)}
                 isFullyCompleted={isBookFullyCompleted(book.id)}
                 isPartiallyCompleted={isBookPartiallyCompleted(book.id)}
                 onChapterToggle={(chapterNum) => toggleChapter(book.id, chapterNum)}
                 onFavoritesToggle={(chapterNum) => toggleFavoriteChapter(book.id, chapterNum)}
+                onDateChange={(dateString) => setCompletionDate(book.id, dateString)}
                 onToggleAll={() => toggleAllChaptersInBook(book.id)}
               />
             ))

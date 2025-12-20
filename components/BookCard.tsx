@@ -6,10 +6,12 @@ interface BookCardProps {
   book: BibleBook;
   completedChapters: number[];
   favoritedChapters: number[];
+  completedDate: string;
   isFullyCompleted: boolean;
   isPartiallyCompleted: boolean;
   onChapterToggle: (chapterNumber: number) => void;
   onFavoritesToggle: (chapterNumber: number) => void;
+  onDateChange: (dateString: string) => void;
   onToggleAll: () => void;
 }
 
@@ -17,10 +19,12 @@ export const BookCard: React.FC<BookCardProps> = ({
   book, 
   completedChapters, 
   favoritedChapters,
+  completedDate,
   isFullyCompleted, 
   isPartiallyCompleted,
   onChapterToggle,
   onFavoritesToggle,
+  onDateChange,
   onToggleAll 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,6 +46,12 @@ export const BookCard: React.FC<BookCardProps> = ({
     if (isFullyCompleted) return 'text-amber-900';
     if (isPartiallyCompleted) return 'text-amber-800';
     return 'text-stone-800';
+  };
+
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   return (
@@ -79,6 +89,11 @@ export const BookCard: React.FC<BookCardProps> = ({
           <span>{completedChapters.length}/{book.chapters} Chapters</span>
           <span>{book.wordCount.toLocaleString()} Words</span>
         </div>
+        {isFullyCompleted && completedDate && (
+          <div className="text-xs text-amber-700 font-medium">
+            Completed: {formatDate(completedDate)}
+          </div>
+        )}
       </button>
 
       {/* Expanded Chapter List */}
@@ -101,6 +116,21 @@ export const BookCard: React.FC<BookCardProps> = ({
               Done
             </button>
           </div>
+
+          {/* Completion Date Field - Only shown when fully completed */}
+          {isFullyCompleted && (
+            <div className="mb-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <label className="block text-xs font-semibold text-amber-800 mb-2">
+                Completion Date
+              </label>
+              <input
+                type="date"
+                value={completedDate}
+                onChange={(e) => onDateChange(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-amber-300 rounded-lg bg-white text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+          )}
 
           {/* Chapter Grid */}
           <div className="grid grid-cols-5 gap-2">
