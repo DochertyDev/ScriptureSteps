@@ -1,12 +1,12 @@
 <p align="center">
-  <a href="https://ai.studio/apps/drive/103QpALsR1PaXF5_leO8aTN59kTcwLwmW?fullscreenApplet=true">
+  <a href="https://dochertydev.github.io/ScriptureSteps/">
     <img src="images/apple-touch-icon.png" width="150" alt="ScriptureSteps">
   </a>
 </p>
 
 <div align="center">
 
-_Click the logo above to access the website in Google AI Studio_
+_Click the logo above to access the website!_
 </div>
 
 <h1 align="center">
@@ -17,7 +17,7 @@ ScriptureSteps
 
 <div align="center">
 
- [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Site](https://img.shields.io/badge/Webpage-fafaf9)](https://ai.studio/apps/drive/103QpALsR1PaXF5_leO8aTN59kTcwLwmW?fullscreenApplet=true) [![GitHub Stars](https://img.shields.io/github/stars/DochertyDev/ScriptureSteps)](https://github.com/DochertyDev/ScriptureSteps)
+ [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Site](https://img.shields.io/badge/Webpage-fafaf9)](https://dochertydev.github.io/ScriptureSteps/) [![GitHub Stars](https://img.shields.io/github/stars/DochertyDev/ScriptureSteps)](https://github.com/DochertyDev/ScriptureSteps)
 
 </div>
 
