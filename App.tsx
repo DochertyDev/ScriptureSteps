@@ -1,57 +1,149 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { BIBLE_BOOKS, TOTAL_BIBLE_WORD_COUNT } from './constants';
-import { Testament, UserProgress } from './types';
+import { Testament, UserProgress, LegacyUserProgress } from './types';
 import { ProgressBar } from './components/ProgressBar';
 import { BookCard } from './components/BookCard';
 
 const LOCAL_STORAGE_KEY = 'scripture_steps_progress';
 
 const App: React.FC = () => {
-  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [completedChapters, setCompletedChapters] = useState<Record<string, number[]>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTestament, setFilterTestament] = useState<'ALL' | Testament>('ALL');
+
+  // Utility functions for chapter management
+  const isChapterCompleted = (bookId: string, chapterNumber: number): boolean => {
+    return completedChapters[bookId]?.includes(chapterNumber) ?? false;
+  };
+
+  const getCompletedChaptersForBook = (bookId: string): number[] => {
+    return completedChapters[bookId] ?? [];
+  };
+
+  const isBookFullyCompleted = (bookId: string): boolean => {
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book) return false;
+    const completed = getCompletedChaptersForBook(bookId);
+    return completed.length === book.chapters;
+  };
+
+  const isBookPartiallyCompleted = (bookId: string): boolean => {
+    const completed = getCompletedChaptersForBook(bookId);
+    return completed.length > 0 && !isBookFullyCompleted(bookId);
+  };
+
+  const toggleChapter = (bookId: string, chapterNumber: number) => {
+    setCompletedChapters(prev => {
+      const bookChapters = prev[bookId] ?? [];
+      const isCompleted = bookChapters.includes(chapterNumber);
+      
+      return {
+        ...prev,
+        [bookId]: isCompleted
+          ? bookChapters.filter(ch => ch !== chapterNumber)
+          : [...bookChapters, chapterNumber].sort((a, b) => a - b)
+      };
+    });
+  };
+
+  const toggleAllChaptersInBook = (bookId: string) => {
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
+
+    setCompletedChapters(prev => {
+      const isFullyCompleted = isBookFullyCompleted(bookId);
+      
+      if (isFullyCompleted) {
+        // If fully completed, uncheck all
+        const newState = { ...prev };
+        delete newState[bookId];
+        return newState;
+      } else {
+        // Otherwise, check all chapters
+        const allChapters = Array.from({ length: book.chapters }, (_, i) => i + 1);
+        return {
+          ...prev,
+          [bookId]: allChapters
+        };
+      }
+    });
+  };
+
+  // Migration function from old format to new format
+  const migrateProgress = (saved: string): Record<string, number[]> => {
+    try {
+      const parsed = JSON.parse(saved);
+      
+      // Check if this is old format (has completedBookIds)
+      if ('completedBookIds' in parsed && Array.isArray(parsed.completedBookIds)) {
+        const legacyProgress = parsed as LegacyUserProgress;
+        const newProgress: Record<string, number[]> = {};
+        
+        // Convert each completed book to all chapters completed
+        legacyProgress.completedBookIds.forEach(bookId => {
+          const book = BIBLE_BOOKS.find(b => b.id === bookId);
+          if (book) {
+            newProgress[bookId] = Array.from({ length: book.chapters }, (_, i) => i + 1);
+          }
+        });
+        
+        return newProgress;
+      } else if ('completedChapters' in parsed && typeof parsed.completedChapters === 'object') {
+        // Already in new format
+        return parsed.completedChapters;
+      }
+    } catch (e) {
+      console.error("Failed to parse progress", e);
+    }
+    
+    return {};
+  };
 
   // Load progress on mount
   useEffect(() => {
     const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (saved) {
-      try {
-        const parsed: UserProgress = JSON.parse(saved);
-        setCompletedIds(parsed.completedBookIds);
-      } catch (e) {
-        console.error("Failed to parse progress", e);
-      }
+      const migratedProgress = migrateProgress(saved);
+      setCompletedChapters(migratedProgress);
     }
   }, []);
 
   // Save progress whenever it changes
   useEffect(() => {
     const progress: UserProgress = {
-      completedBookIds: completedIds,
+      completedChapters: completedChapters,
       lastUpdated: new Date().toISOString(),
     };
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(progress));
-  }, [completedIds]);
-
-  const toggleBook = (id: string) => {
-    setCompletedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
+  }, [completedChapters]);
 
   const clearAll = () => {
     if (confirm("Are you sure you want to clear all progress? This cannot be undone.")) {
-      setCompletedIds([]);
+      setCompletedChapters({});
     }
   };
 
+  // Calculate total word count of completed chapters
+  const calculateCompletedWordCount = (): number => {
+    return BIBLE_BOOKS.reduce((total, book) => {
+      const completed = getCompletedChaptersForBook(book.id);
+      if (completed.length === 0) return total;
+      
+      const wordCountPerChapter = book.wordCount / book.chapters;
+      return total + (wordCountPerChapter * completed.length);
+    }, 0);
+  };
+
   const progressPercentage = useMemo(() => {
-    const completedWeight = BIBLE_BOOKS
-      .filter(book => completedIds.includes(book.id))
-      .reduce((sum, book) => sum + book.wordCount, 0);
+    const completedWeight = calculateCompletedWordCount();
     return (completedWeight / TOTAL_BIBLE_WORD_COUNT) * 100;
-  }, [completedIds]);
+  }, [completedChapters]);
+
+  // Count total completed chapters
+  const totalCompletedChapters = useMemo(() => {
+    return Object.values(completedChapters).reduce((sum, chapters) => sum + chapters.length, 0);
+  }, [completedChapters]);
 
   const filteredBooks = useMemo(() => {
     return BIBLE_BOOKS.filter(book => {
@@ -116,7 +208,7 @@ const App: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-stone-100">
             <div className="flex gap-4 items-center">
               <div className="text-sm font-medium text-stone-500">
-                <span className="text-stone-900 font-bold">{completedIds.length}</span> / 66 books completed
+                <span className="text-stone-900 font-bold">{totalCompletedChapters}</span> / 1,189 chapters completed
               </div>
             </div>
             <button 
@@ -138,8 +230,11 @@ const App: React.FC = () => {
               <BookCard 
                 key={book.id} 
                 book={book} 
-                isCompleted={completedIds.includes(book.id)} 
-                onToggle={toggleBook}
+                completedChapters={getCompletedChaptersForBook(book.id)}
+                isFullyCompleted={isBookFullyCompleted(book.id)}
+                isPartiallyCompleted={isBookPartiallyCompleted(book.id)}
+                onChapterToggle={(chapterNum) => toggleChapter(book.id, chapterNum)}
+                onToggleAll={() => toggleAllChaptersInBook(book.id)}
               />
             ))
           ) : (
@@ -159,10 +254,10 @@ const App: React.FC = () => {
       <footer className="mt-20 border-t border-stone-200 bg-white py-12 text-center">
         <div className="max-w-5xl mx-auto px-4">
           <p className="text-stone-400 text-sm mb-4">
-            Total Weight: {TOTAL_BIBLE_WORD_COUNT.toLocaleString()} words.
+            Total Weight: {TOTAL_BIBLE_WORD_COUNT.toLocaleString()} words across 1,189 chapters.
           </p>
           <p className="text-stone-400 text-xs max-w-lg mx-auto leading-relaxed">
-            Note: Percentages are calculated with precision using approximate word counts for each book. 
+            Note: Percentages are calculated with precision using approximate word counts for each chapter. 
             Progress is saved locally to your browser's memory.
           </p>
         </div>

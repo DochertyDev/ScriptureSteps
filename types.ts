@@ -13,6 +13,11 @@ export interface BibleBook {
 }
 
 export interface UserProgress {
+  completedChapters: Record<string, number[]>;
+  lastUpdated: string;
+}
+
+export interface LegacyUserProgress {
   completedBookIds: string[];
   lastUpdated: string;
 }
