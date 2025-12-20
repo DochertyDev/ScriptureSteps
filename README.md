@@ -6,7 +6,7 @@
 
 <div align="center">
 
-_Click the logo above to access the website_
+_Click the logo above to access the website in Google AI Studio_
 </div>
 
 <h1 align="center">
