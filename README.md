@@ -60,7 +60,7 @@ ScriptureSteps is a web application designed for users who want to track their B
 
 ## 🚀 Quick Start (Local Development)
 
-This project includes a simple build process for local development. But it is recommended to just use the web app by clicking on the logo above.
+This project includes a simple build process for local development. **But it is recommended to just use the web app by clicking on the logo above.**
 
 ### Prerequisites
 
