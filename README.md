@@ -48,14 +48,18 @@ ScriptureSteps
 
 ## 📄 Overview
 
-ScriptureSteps is a web application designed for users who want to track their Bible reading progress in a more detailed and accurate way. Unlike traditional trackers that simply mark chapters as read, ScriptureSteps calculates progress based on the total word count of each book. This method provides a more granular and representative measure of completion. The application is built with React and TypeScript, runs entirely in the browser, and saves all progress locally to your device, ensuring your data remains private.
+ScriptureSteps is a web application designed for users who want to track their Bible reading progress in a more detailed and accurate way. Unlike traditional trackers that simply mark chapters as read, ScriptureSteps calculates progress based on the total word count of each book. This method provides a more granular and representative measure of completion. The application is built with React and TypeScript, runs entirely in the browser, and saves all progress locally to your device, ensuring your data remains private. With features like book and chapter favoriting, completion date tracking, and a current reading position indicator, ScriptureSteps provides a comprehensive Bible reading experience.
 
 ### Features
 
 -   **Word-Count Based Tracking:** Progress is calculated based on the word count of each book and chapter, offering a more accurate reflection of your reading journey.
--   **Comprehensive Visuals:** An overall progress bar shows your total progress through the entire Bible, while individual cards for each book display their specific completion status.
+-   **Comprehensive Visuals:** An overall progress bar shows your total progress through the entire Bible, while individual cards for each book display their specific completion status. Track both book and chapter completion counts.
+-   **Book & Chapter Favorites:** Mark your favorite books or chapters with a star icon for quick access and organization. View all your favorited content in a dedicated Favorites tab.
+-   **Current Reading Position:** Set and track your current reading place by selecting a book, chapter, and verse. Resume reading from exactly where you left off.
+-   **Completion Date Tracking:** Record the date you completed each book for a personalized reading history.
 -   **Client-Side Storage:** All your reading data is securely saved in your browser's `localStorage`, meaning you don't need an account and your data stays with you.
 -   **Book & Chapter Granularity:** Mark entire books as read with a single click or track your progress chapter-by-chapter for more detailed management.
+-   **Search & Filter:** Easily find books by name or filter by Old Testament and New Testament.
 -   **Modern & Responsive Interface:** A clean and intuitive user interface built with modern web technologies, ensuring a seamless experience on both desktop and mobile devices.
 
 ## 🚀 Quick Start (Local Development)
@@ -95,11 +99,16 @@ This project includes a simple build process for local development. **But it is 
 
 Once the application is running, you can start tracking your progress right away.
 
-1.  **View Progress:** The main screen displays an overall progress bar and a card for each book of the Bible.
-2.  **Interact with Books:** Click on a book's card to expand it and see the list of chapters.
-3.  **Track Chapters:** Click on individual chapter numbers to mark them as read or unread.
-4.  **Mark Books:** Use the "Mark as Read" or "Mark as Unread" button on the book card to update the entire book at once.
-5.  **Automatic Saving:** Your progress is saved automatically every time you make a change.
+1.  **View Progress:** The main screen displays an overall progress bar showing your percentage completion, along with a card for each book of the Bible.
+2.  **Set Your Reading Place:** Use the "Current Reading Place" section at the top to select a book, chapter, and verse where you want to resume reading. This information is saved automatically.
+3.  **Interact with Books:** Click on a book's card to expand it and see the list of chapters.
+4.  **Track Chapters:** Click on individual chapter numbers to mark them as read or unread. The overall progress updates based on word count.
+5.  **Favorite Books & Chapters:** Click the star icon on a book card header to add it to your favorites, or hover over a chapter and click its star to favorite specific chapters.
+6.  **Mark Books:** Use the "Check All" button to mark all chapters in a book as read, or "Uncheck All" to clear them.
+7.  **Track Completion Dates:** When you fully complete a book, a date field appears where you can record when you finished it.
+8.  **View Favorites:** Click the "My Favorites" tab to see all your favorited books and chapters in one place.
+9.  **Search & Filter:** Use the search box to find books by name, or use the Old Testament/New Testament filter buttons.
+10. **Automatic Saving:** Your progress, favorites, and reading position are saved automatically every time you make a change.
 
 ## 🛠️ Technologies Used
 
