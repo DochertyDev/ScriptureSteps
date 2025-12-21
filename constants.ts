@@ -72,3 +72,6 @@ export const BIBLE_BOOKS: BibleBook[] = [
 ];
 
 export const TOTAL_BIBLE_WORD_COUNT = BIBLE_BOOKS.reduce((sum, book) => sum + book.wordCount, 0);
+
+// Default max verses per chapter (actual verse counts vary by book and chapter)
+export const DEFAULT_MAX_VERSES_PER_CHAPTER = 176; // Based on Psalm 119, the longest chapter
